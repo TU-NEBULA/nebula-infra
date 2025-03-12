@@ -7,6 +7,7 @@ on:
       - main
     paths:
       - 'test/fastapi/**'
+      - 'test/modules/**'
 
 jobs:
   terraform-fastapi-dev:
@@ -42,26 +43,20 @@ jobs:
       working-directory: test/fastapi
       run: terraform output -json | jq -r '.fastapi_eip.value'
 
-    - name: Debug Terraform Output
-      working-directory: test/fastapi
-      run: terraform output -json | jq -r '.celery_eip.value'
-
-    - name: Debug Terraform Output
-      working-directory: test/fastapi
-      run: terraform output -json | jq -r '.chroma_eip.value'
-
     - name: Get EC2 Public IPs from Terraform Output
       id: get-ips
       working-directory: test/fastapi
       run: |
-        FASTAPI_IP=$(terraform output -json | jq -r '.fastapi_eip.value')
-        CELERY_IP=$(terraform output -json | jq -r '.celery_eip.value')
-        CHROMA_IP=$(terraform output -json | jq -r '.chroma_eip.value')
+        terraform output -json > output.json  # JSON 파일 저장
+        jq '.' output.json  # JSON 구조 확인 (디버깅용)
+        
+        FASTAPI_IP=$(jq -r '.fastapi_eip["value"]' output.json)
+        CELERY_IP=$(jq -r '.celery_eip["value"]' output.json)
+        CHROMA_IP=$(jq -r '.chroma_eip["value"]' output.json)
     
         echo "DEV_FASTAPI_IP=$FASTAPI_IP" >> $GITHUB_ENV
         echo "DEV_CELERY_IP=$CELERY_IP" >> $GITHUB_ENV
         echo "DEV_CHROMA_IP=$CHROMA_IP" >> $GITHUB_ENV
-    
 
     - name: Update GitHub Organization Variables
       uses: actions/github-script@v6
