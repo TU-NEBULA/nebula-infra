@@ -3,16 +3,15 @@ set -eux
 
 echo "setup.sh 실행 시작" | sudo tee -a /var/log/setup.log
 
-# 추가된 EBS 볼륨 확인 및 마운트
 if lsblk | grep -q xvdi; then
     sudo mkfs -t ext4 /dev/xvdi
-    sudo mkdir -p /mnt/chroma
-    sudo mount /dev/xvdi /mnt/chroma
-    echo "/dev/xvdi /mnt/chroma ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
-    echo "Chroma 추가 볼륨 마운트 완료" | sudo tee -a /var/log/setup.log
+    sudo mkdir -p /mnt/extra
+    sudo mount /dev/xvdi /mnt/extra
+    echo "/dev/xvdi /mnt/extra ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+    chmod 777 /mnt/extra
+    echo "추가 볼륨 마운트 완료" | sudo tee -a /var/log/setup.log
 fi
 
-# Docker 및 Docker Compose 설치
 echo "Docker 설치 시작" | sudo tee -a /var/log/setup.log
 sudo apt-get update 
 sudo apt-get upgrade -y
