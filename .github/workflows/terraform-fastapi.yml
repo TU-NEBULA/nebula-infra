@@ -40,6 +40,11 @@ jobs:
     - name: Debugging
       run: |
         terraform output -json
+        terraform output -json > output.json
+        cat output.json
+        jq -r '.fastapi_eip.value' output.json
+        jq -r '.celery_eip.value' output.json
+        jq -r '.chroma_eip.value' output.json
         terraform output -raw fastapi_eip
 
     - name: Debugging

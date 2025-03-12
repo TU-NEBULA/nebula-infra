@@ -30,6 +30,7 @@ resource "aws_instance" "fastapi_servers" {
   #   ROLE = element(["fastapi", "celery", "chroma"], count.index)
   # })
   user_data = file("${path.module}/scripts/setup_docker.sh")
+  user_data_replace_on_change = true
 }
 
 resource "aws_eip" "fastapi_eip" {
