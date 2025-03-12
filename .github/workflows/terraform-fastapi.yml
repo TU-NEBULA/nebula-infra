@@ -39,6 +39,11 @@ jobs:
 
     - name: Debugging
       run: |
+        terraform output -json
+        terraform output -raw fastapi_eip
+
+    - name: Debugging
+      run: |
         echo "FastAPI EIP: $(terraform output -raw fastapi_eip)"
         echo "Celery EIP: $(terraform output -raw celery_eip)"
         echo "Chroma EIP: $(terraform output -raw chroma_eip)"
