@@ -35,6 +35,12 @@ jobs:
       working-directory: test/fastapi
       run: terraform apply -auto-approve
 
+    - name: Debugging
+      run: |
+        echo "FastAPI EIP: $(terraform output -raw fastapi_eip)"
+        echo "Celery EIP: $(terraform output -raw celery_eip)"
+        echo "Chroma EIP: $(terraform output -raw chroma_eip)"
+
     - name: Get EC2 Public IPs from Terraform Output
       working-directory: test/fastapi
       run: |
