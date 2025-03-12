@@ -34,6 +34,10 @@ jobs:
       working-directory: test/fastapi
       run: terraform apply -auto-approve
 
+    - name: Debug Terraform Output
+      working-directory: test/fastapi
+      run: terraform output -json
+
     - name: Get EC2 Public IPs from Terraform Output
       id: get-ips
       working-directory: test/fastapi
