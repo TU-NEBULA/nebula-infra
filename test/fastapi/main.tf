@@ -31,24 +31,9 @@ resource "aws_instance" "fastapi_servers" {
     volume_type = "gp3"
   }
 
-  user_data = file("${path.module}/scripts/setup_docker.sh")
+  user_data = file("${path.module}/scripts/setup.sh")
   user_data_replace_on_change = true
 }
-
-resource "aws_ebs_volume" "fastapi_ebs" {
-  availability_zone = "ap-northeast-2a"
-  size             = 10
-  tags = {
-    Name = "fastapi-extra-volume"
-  }
-}
-
-resource "aws_volume_attachment" "fastapi_attach" {
-  device_name = "/dev/xvdh"
-  volume_id   = aws_ebs_volume.fastapi_ebs.id
-  instance_id = aws_instance.fastapi_servers[0].id
-}
-
 
 resource "aws_ebs_volume" "chroma_ebs" {
   availability_zone = "ap-northeast-2a"
