@@ -33,7 +33,7 @@ resource "aws_instance" "nebula_ai" {
 
 resource "aws_ebs_volume" "nebula_extra_ebs" {
   availability_zone = "ap-northeast-2a"
-  size             = 20
+  size             = 30
   tags = {
     Name = "nebula-extra-volume"
   }

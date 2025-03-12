@@ -3,13 +3,22 @@ set -eux
 
 echo "setup.sh 실행 시작" | sudo tee -a /var/log/setup.log
 
-if lsblk | grep -q xvdi; then
-    sudo mkfs -t ext4 /dev/xvdi
+#!/bin/bash
+set -eux
+
+echo "setup.sh 실행 시작" | sudo tee -a /var/log/setup.log
+
+DEVICE=$(lsblk -o NAME,SIZE | grep 30G | awk '{print "/dev/"$1}' | head -n 1)
+
+if [ -n "$DEVICE" ]; then
+    sudo mkfs -t ext4 "$DEVICE"
     sudo mkdir -p /mnt/extra
-    sudo mount /dev/xvdi /mnt/extra
-    echo "/dev/xvdi /mnt/extra ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
+    sudo mount "$DEVICE" /mnt/extra
+    echo "$DEVICE /mnt/extra ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
     chmod 777 /mnt/extra
-    echo "추가 볼륨 마운트 완료" | sudo tee -a /var/log/setup.log
+    echo "✅ 추가 볼륨 마운트 완료: $DEVICE" | sudo tee -a /var/log/setup.log
+else
+    echo "❌ 추가 EBS 볼륨을 찾을 수 없음" | sudo tee -a /var/log/setup.log
 fi
 
 echo "Docker 설치 시작" | sudo tee -a /var/log/setup.log
