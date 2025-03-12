@@ -1,0 +1,61 @@
+name: Terraform Apply - FastAPI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'test/fastapi/**'
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        region: ap-northeast-2
+
+    - name: Terraform Init
+      working-directory: test/fastapi
+      run: terraform init
+
+    - name: Terraform Apply
+      working-directory: test/fastapi
+      run: terraform apply -auto-approve
+
+    - name: Get EC2 Public IPs from Terraform Output
+      id: get-ips
+      working-directory: test/fastapi
+      run: |
+        echo "DEV_FASTAPI_IP=$(terraform output -raw fastapi_public_ip)" >> $GITHUB_ENV
+        echo "DEV_CELERY_IP=$(terraform output -raw celery_public_ip)" >> $GITHUB_ENV
+        echo "DEV_CHROMA_IP=$(terraform output -raw chroma_public_ip)" >> $GITHUB_ENV
+
+    - name: Update GitHub Organization Variables
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const variables = {
+            DEV_FASTAPI_IP: process.env.DEV_FASTAPI_IP,
+            DEV_CELERY_IP: process.env.DEV_CELERY_IP,
+            DEV_CHROMA_IP: process.env.DEV_CHROMA_IP
+          };
+
+          for (const [key, value] of Object.entries(variables)) {
+            await github.request('PATCH /orgs/TU-NEBULA/actions/variables/' + key, {
+              org: 'TU-NEBULA',
+              name: key,
+              value: value
+            });
+          }
