@@ -38,9 +38,9 @@ jobs:
       id: get-ips
       working-directory: test/fastapi
       run: |
-        FASTAPI_IP=$(terraform output -json | jq -r '.fastapi_public_ip.value')
-        CELERY_IP=$(terraform output -json | jq -r '.celery_public_ip.value')
-        CHROMA_IP=$(terraform output -json | jq -r '.chroma_public_ip.value')
+        FASTAPI_IP=$(terraform output -json | jq -r '.fastapi_eip.value')
+        CELERY_IP=$(terraform output -json | jq -r '.celery_eip.value')
+        CHROMA_IP=$(terraform output -json | jq -r '.chroma_eip.value')
     
         echo "DEV_FASTAPI_IP=$FASTAPI_IP" >> $GITHUB_ENV
         echo "DEV_CELERY_IP=$CELERY_IP" >> $GITHUB_ENV
