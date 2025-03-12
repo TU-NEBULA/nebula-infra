@@ -26,11 +26,42 @@ resource "aws_instance" "fastapi_servers" {
     Role = element(["FastAPI", "Celery", "Chroma"], count.index)
   }
 
-  # user_data = templatefile("${path.module}/scripts/setup_instance.sh", {
-  #   ROLE = element(["fastapi", "celery", "chroma"], count.index)
-  # })
+  root_block_device {
+    volume_size = count.index == 2 ? 20 : count.index == 0 ? 10 : 8  # ✅ Chroma(20GB), FastAPI(10GB), Celery(8GB 기본값)
+  }
+
   user_data = file("${path.module}/scripts/setup_docker.sh")
   user_data_replace_on_change = true
+}
+
+# ✅ FastAPI용 추가 EBS 볼륨 (10GB)
+resource "aws_ebs_volume" "fastapi_ebs" {
+  availability_zone = "ap-northeast-2a"
+  size             = 10
+  tags = {
+    Name = "fastapi-extra-volume"
+  }
+}
+
+resource "aws_volume_attachment" "fastapi_attach" {
+  device_name = "/dev/xvdh"
+  volume_id   = aws_ebs_volume.fastapi_ebs.id
+  instance_id = aws_instance.fastapi_servers[0].id
+}
+
+# ✅ Chroma용 추가 EBS 볼륨 (20GB)
+resource "aws_ebs_volume" "chroma_ebs" {
+  availability_zone = "ap-northeast-2a"
+  size             = 20
+  tags = {
+    Name = "chroma-extra-volume"
+  }
+}
+
+resource "aws_volume_attachment" "chroma_attach" {
+  device_name = "/dev/xvdi"
+  volume_id   = aws_ebs_volume.chroma_ebs.id
+  instance_id = aws_instance.fastapi_servers[2].id
 }
 
 resource "aws_eip" "fastapi_eip" {
