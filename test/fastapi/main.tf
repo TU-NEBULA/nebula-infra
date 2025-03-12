@@ -25,6 +25,11 @@ resource "aws_instance" "fastapi_servers" {
     Name = "nebula-ai-${element(["fastapi", "celery", "chroma"], count.index)}"
     Role = element(["FastAPI", "Celery", "Chroma"], count.index)
   }
+
+  # user_data = templatefile("${path.module}/scripts/setup_instance.sh", {
+  #   ROLE = element(["fastapi", "celery", "chroma"], count.index)
+  # })
+  user_data = file("${path.module}/scripts/setup_docker.sh")
 }
 
 resource "aws_eip" "fastapi_eip" {
