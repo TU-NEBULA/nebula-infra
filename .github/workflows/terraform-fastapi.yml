@@ -1,5 +1,4 @@
 name: Terraform Apply - FastAPI
-
 on:
   workflow_dispatch:
   push:
@@ -8,40 +7,36 @@ on:
     paths:
       - 'test/fastapi/**'
       - 'test/modules/**'
-
 jobs:
   terraform-fastapi-dev:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      id-token: write
+      actions: write
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
-
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v1
       with:
         terraform_wrapper: false
-
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ap-northeast-2
-
     - name: Terraform Init
       working-directory: test/fastapi
       run: terraform init
-
     - name: Terraform Apply
       working-directory: test/fastapi
       run: terraform apply -auto-approve
-
     - name: Get EC2 Public IP from Terraform Output
       working-directory: test/fastapi
       run: |
         echo "DEV_FASTAPI_IP=$(terraform output -raw nebula_ai_eip)" >> $GITHUB_ENV
-
     - name: Update GitHub Organization Variables
       uses: actions/github-script@v6
       with:
